@@ -1,7 +1,7 @@
 --[[
 
      Licensed under GNU General Public License v2
-      * (c) 2013,      Luca CPZ
+      * (c) 2013,      Luke Bonham
       * (c) 2010-2012, Peter Hofmann
 
 --]]
@@ -9,35 +9,32 @@
 local helpers = require("lain.helpers")
 local naughty = require("naughty")
 local wibox   = require("wibox")
-local string  = string
+local string  = { format = string.format, match = string.match }
 
 -- Network infos
 -- lain.widget.net
 
 local function factory(args)
-    args             = args or {}
-
-    local net        = { widget = args.widget or wibox.widget.textbox(), devices = {} }
-    local timeout    = args.timeout or 2
-    local units      = args.units or 1024 -- KB
-    local notify     = args.notify or "on"
-    local wifi_state = args.wifi_state or "off"
-    local eth_state  = args.eth_state or "off"
-    local screen     = args.screen or 1
-    local settings   = args.settings or function() end
+    local net      = { widget = wibox.widget.textbox(), devices = {} }
+    local args     = args or {}
+    local timeout  = args.timeout or 2
+    local units    = args.units or 1024 -- KB
+    local notify   = args.notify or "on"
+    local screen   = args.screen or 1
+    local settings = args.settings or function() end
 
     -- Compatibility with old API where iface was a string corresponding to 1 interface
     net.iface = (args.iface and (type(args.iface) == "string" and {args.iface}) or
                 (type(args.iface) == "table" and args.iface)) or {}
 
-    function net.get_devices()
-        net.iface = {} -- reset at every call
-        helpers.line_callback("ip link", function(line)
-            net.iface[#net.iface + 1] = not string.match(line, "LOOPBACK") and string.match(line, "(%w+): <") or nil
+    function net.get_device()
+        helpers.async(string.format("ip link show", device_cmd), function(ws)
+            ws = ws:match("(%w+): <BROADCAST,MULTICAST,.-UP,LOWER_UP>")
+            net.iface = ws and { ws } or {}
         end)
     end
 
-    if #net.iface == 0 then net.get_devices() end
+    if #net.iface == 0 then net.get_device() end
 
     function net.update()
         -- These are the totals over all specified interfaces
@@ -48,7 +45,7 @@ local function factory(args)
             received = 0
         }
 
-        for _, dev in ipairs(net.iface) do
+        for i, dev in ipairs(net.iface) do
             local dev_now    = {}
             local dev_before = net.devices[dev] or { last_t = 0, last_r = 0 }
             local now_t      = tonumber(helpers.first_line(string.format("/sys/class/net/%s/statistics/tx_bytes", dev)) or 0)
@@ -69,24 +66,9 @@ local function factory(args)
             dev_now.last_t   = now_t
             dev_now.last_r   = now_r
 
-            if wifi_state == "on" and helpers.first_line(string.format("/sys/class/net/%s/uevent", dev)) == "DEVTYPE=wlan" then
-                dev_now.wifi   = true
-                if string.match(dev_now.carrier, "1") then
-                        dev_now.signal = tonumber(string.match(helpers.lines_from("/proc/net/wireless")[3], "(%-%d+%.)")) or nil
-                end
-            else
-                dev_now.wifi   = false
-            end
-
-            if eth_state == "on" and helpers.first_line(string.format("/sys/class/net/%s/uevent", dev)) ~= "DEVTYPE=wlan" then
-                dev_now.ethernet = true
-            else
-                dev_now.ethernet = false
-            end
-
             net.devices[dev] = dev_now
 
-            -- Notify only once when connection is lost
+            -- Notify only once when connection is loss
             if string.match(dev_now.carrier, "0") and notify == "on" and helpers.get_map(dev) then
                 naughty.notify {
                     title    = dev,
@@ -102,7 +84,7 @@ local function factory(args)
             net_now.carrier = dev_now.carrier
             net_now.state = dev_now.state
             net_now.devices[dev] = dev_now
-            -- net_now.sent and net_now.received will be
+            -- new_now.sent and net_now.received will be
             -- the totals across all specified devices
         end
 
