@@ -1,0 +1,9 @@
+#! /bin/sh
+sleep 300
+webpage=$(curl -s "https://merolagani.com/CompanyDetail.aspx?symbol=nmb")
+price=$(echo $webpage | pup 'span#ctl00_ContentPlaceHolder1_CompanyDetail1_lblMarketPrice text{}'| cut -d. -f1 | bc)
+echo "$price"
+if [ $price -gt 300 ]
+then 
+	notify-send -i /home/poodypaiPictures/assets/nepse.png "Time to Sell NMB!"; paplay /usr/local/bin/bin/save-that-money.ogg
+fi
