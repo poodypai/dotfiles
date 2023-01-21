@@ -25,7 +25,7 @@ theme.fg_urgent                                 = "#CC9393"
 theme.bg_normal                                 = "#140c0b"
 theme.bg_focus                                  = "#140c0b"
 theme.bg_urgent                                 = "#2a1f1e"
-theme.border_width                              = dpi(1)
+theme.border_width                              = dpi(3)
 theme.border_normal                             = "#302627"
 theme.border_focus                              = "#c2745b"
 theme.border_marked                             = "#CC9393"
@@ -38,18 +38,18 @@ theme.menu_height                               = dpi(16)
 theme.menu_width                                = dpi(140)
 theme.awesome_icon                              = theme.dir .."/icons/awesome.png"
 theme.menu_submenu_icon                         = theme.dir .. "/icons/submenu.png"
-theme.layout_txt_tile                           = "[t]"
-theme.layout_txt_tileleft                       = "[l]"
-theme.layout_txt_tilebottom                     = "[b]"
-theme.layout_txt_tiletop                        = "[tt]"
-theme.layout_txt_fairv                          = "[fv]"
-theme.layout_txt_fairh                          = "[fh]"
-theme.layout_txt_spiral                         = "[s]"
-theme.layout_txt_dwindle                        = "[d]"
-theme.layout_txt_max                            = "[m]"
-theme.layout_txt_fullscreen                     = "[F]"
-theme.layout_txt_magnifier                      = "[M]"
-theme.layout_txt_floating                       = "[|]"
+theme.layout_txt_tile                           = "[ Tile ]"
+theme.layout_txt_tileleft                       = "[ Tile Left ]"
+theme.layout_txt_tilebottom                     = "[ Tile Bottom ]"
+theme.layout_txt_tiletop                        = "[ Tile Top ]"
+theme.layout_txt_fairv                          = "[ Fair V ]"
+theme.layout_txt_fairh                          = "[ Fair H ]"
+theme.layout_txt_spiral                         = "[ Spiral ]"
+theme.layout_txt_dwindle                        = "[ Dwindle ]"
+theme.layout_txt_max                            = "[ MAX ]"
+theme.layout_txt_fullscreen                     = "[ Fullscreen ]"
+theme.layout_txt_magnifier                      = "[ Magnifier ]"
+theme.layout_txt_floating                       = "[ Floating ]"
 theme.tasklist_plain_task_name                  = true
 theme.tasklist_disable_icon                     = true
 theme.useless_gap                               = dpi(8)
@@ -80,12 +80,13 @@ theme.layout_txt_centerfair                     = "[centerfair]"
 
 local markup = lain.util.markup
 local gray   = "#94928F"
-
+local none = ""
+local volume_widget = require('awesome-wm-widgets.volume-widget.volume')
 -- Textclock
-local mytextclock = wibox.widget.textclock(" [%H:%M] ")
+local mytextclock = wibox.widget.textclock(" [ 📅 %a  %d  %b ]   [ 🕘 %H : %M ]  ")
 mytextclock.font = theme.font
 
--- Calendar
+--[[ Calendar
 theme.cal = lain.widget.cal({
     attach_to = { mytextclock },
     notification_preset = {
@@ -94,6 +95,7 @@ theme.cal = lain.widget.cal({
         bg   = theme.bg_normal
     }
 })
+--]]
 
 -- Mail IMAP check
 --[[ to be set before use
@@ -117,6 +119,7 @@ theme.mail = lain.widget.imap({
 --]]
 
 -- MPD
+--[[
 theme.mpd = lain.widget.mpd({
     settings = function()
         artist = mpd_now.artist .. " "
@@ -133,18 +136,18 @@ theme.mpd = lain.widget.mpd({
         widget:set_markup(markup.font(theme.font, markup(gray, artist) .. title))
     end
 })
-
+--]]
 -- CPU
 local cpu = lain.widget.sysload({
     settings = function()
-        widget:set_markup(markup.font(theme.font, markup(gray, "[Cpu Usage] ")  .. load_1 .. " "))
+        widget:set_markup(markup.font(theme.font, markup(gray, " [ 🖥️ CPU]  ")   .. load_1 .. " % "))
     end
 })
 
 -- MEM
 local mem = lain.widget.mem({
     settings = function()
-        widget:set_markup(markup.font(theme.font, markup(gray, " [Memory] ") .. mem_now.used .. " "))
+        widget:set_markup(markup.font(theme.font, markup(gray, " [ 🖥️ RAM]  ") .. mem_now.used .. " MB "))
     end
 })
 
@@ -155,7 +158,7 @@ theme.fs = lain.widget.fs({
     notification_preset = { fg = theme.fg_normal, bg = theme.bg_normal, font = "Terminus 10.5" },
 })
 --]]
-
+--[[
 -- Battery
 local bat = lain.widget.bat({
     settings = function()
@@ -164,37 +167,23 @@ local bat = lain.widget.bat({
         widget:set_markup(markup.font(theme.font, markup(gray, " Bat ") .. perc .. " "))
     end
 })
-
+--]]
 -- Net checker
 local net = lain.widget.net({
     settings = function()
         if net_now.state == "up" then net_state = "On"
         else net_state = "Off" end
-        widget:set_markup(markup.font(theme.font, markup(gray, " [Network] ") .. net_state .. " "))
+        widget:set_markup(markup.font(theme.font, markup(gray, " [ 🖧 Network] ") .. net_state .. " "))
     end
 })
+--]]
 
--- ALSA volume
-theme.volume = lain.widget.alsa({
-    settings = function()
-        header = " [Volume] "
-        vlevel  = volume_now.level
-
-        if volume_now.status == "off" then
-            vlevel = vlevel .. "M "
-        else
-            vlevel = vlevel .. " "
-        end
-
-        widget:set_markup(markup.font(theme.font, markup(gray, header) .. vlevel))
-    end
-})
-
--- Weather
---[[ to be set before use
+--[[
+ Weather
+ to be set before use
 theme.weather = lain.widget.weather({
     --APPID =
-    city_id = 2643743, -- placeholder (London)
+    city_id = 1283240, -- placeholder (London)
 })
 --]]
 
@@ -243,7 +232,7 @@ function theme.at_screen_connect(s)
     s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, awful.util.tasklist_buttons)
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(18) })
+    s.mywibox = awful.wibar({ position = "top", screen = s, height = dpi(30) })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
@@ -265,11 +254,11 @@ function theme.at_screen_connect(s)
             spr,
             --theme.mpd.widget,
             --theme.mail.widget,
+            -- Example: Add to wibox. Here to the right. Do it the way you like it.
             cpu.widget,
             mem.widget,
             --bat.widget,
             net.widget,
-            theme.volume.widget,
             mytextclock
         },
     }
