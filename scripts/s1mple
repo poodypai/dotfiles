@@ -1,5 +1,0 @@
-#! /bin/sh
-webpage=$(curl -s "https://csgostash.com/sticker/4134/s1mple-Stockholm-2021")
-price=$(echo $webpage | pup 'span.pull-right text{}'| head -n 1)
-echo The price of one S1mple 2021 Sticker in Steam is $price
-echo You have 60 of these
