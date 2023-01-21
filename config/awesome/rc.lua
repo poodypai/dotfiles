@@ -454,7 +454,7 @@ globalkeys = my_table.join(
     --    {description = "Xlunch app launcher", group = "altkey"}),
 
     -- screenshots
-    awful.key({ modkey }, "p", function () awful.util.spawn("scrot 'Screenshot-%Y-%m-%d-%s_screenshot_$wx$h.jpg ai/Screenshot-%Y-%m-%d-%s_screenshot_$wx$h.jpg'") end,
+	awful.key({ }, "Print", function () awful.util.spawn("scrot 'ArcoLinux-%Y-%m-%d-%s_screenshot_$wx$h.jpg' -e 'mv $f $$(xdg-user-dir/Pictures)'") end,
         {description = "Scrot", group = "screenshots"}),
     awful.key({ modkey1           }, "Print", function () awful.util.spawn( "xfce4-screenshooter" ) end,
         {description = "Xfce screenshot", group = "screenshots"}),
