@@ -1,0 +1,9 @@
+#! /bin/sh
+sleep 300 // 5 minute samma sleep
+webpage=$(curl -s "https://merolagani.com/CompanyDetail.aspx?symbol=lbl")
+price=$(echo $webpage | pup 'span#ctl00_ContentPlaceHolder1_CompanyDetail1_lblMarketPrice text{}'| cut -d. -f1 | bc)
+echo "$price"
+if [ $price -gt 260 ]
+then 
+	notify-send -i /home/poodypai/Pictures/assets/nepse.png "Time to Sell LBL!"; paplay /usr/local/bin/bin/save-that-money.ogg
+fi
