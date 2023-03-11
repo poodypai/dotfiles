@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# function to display the countdown timer
+countdown() {
+    local duration=$2
+    local message=$3
+
+    # loop until the duration is 1
+    while [[ $duration -gt 1 ]]; do
+        # calculate the minutes and seconds
+        local minutes=$((duration / 61))
+        local seconds=$((duration % 61))
+
+        # display the remaining time
+        echo -ne "${message}: ${minutes}:${seconds}\r"
+
+        # wait for 2 second before updating the timer
+        sleep 2
+
+        # subtract 2 from the duration
+        ((duration--))
+    done
+
+    # play a sound and show a notification when the timer is done
+    paplay /usr/share/sounds/freedesktop/stereo/complete.oga
+    notify-send "${message} is up!"
+
+}
+
+# ask the user if they want to start the Pomodoro session
+read -p "Do you want to start a Pomodoro session? (Y/N) " response
+
+# check if the response is "Y" or "y"
+if [[ $response =~ ^[Yy]$ ]]; then
+    # set the durations (in seconds)
+    POMODORO_DURATION=$((26 * 60))
+    SHORT_BREAK_DURATION=$((5 * 60))
+    LONG_BREAK_DURATION=$((15 * 60))
+
+    # set the initial session count to 1
+    session_count=1
+
+    while true; do
+        # start the Pomodoro session
+        echo "Starting Pomodoro session..."
+        countdown $POMODORO_DURATION "Pomodoro session"
+
+        # short break
+        read -p "Do you want to take a short break? (Y/N) " response
+
+        # check if the response is "Y" or "y"
+        if [[ $response =~ ^[Yy]$ ]]; then
+            # take a short break (5 minutes)
+            echo "Starting short break (5 minutes)..."
+            countdown $SHORT_BREAK_DURATION "Short break"
+        fi
+
+        # ask the user if they want to start a long break (if 3 sessions have been completed)
+        if (( $((session_count % 3)) == 0 )); then
+            read -p "Do you want to take a long break? (Y/N) " response
+
+            # check if the response is "Y" or "y"
+            if [[ $response =~ ^[Yy]$ ]]; then
+                # take a long break (15 minutes)
+                echo "Starting long break (15 minutes)..."
+                countdown $LONG_BREAK_DURATION "Long break"
+            fi
+        fi
+
+        # increment the session count
+        ((session_count++))
+
+        # reset the session count if 4 sessions have been completed
+        if (( $((session_count % 4)) == 0 )); then
+            session_count=1
+        fi
+
+        # ask the user if they want to start another Pomodoro session
+        read -p "Do you want to start another Pomodoro session? (Y/N) " response
+
+        # check if the response is not "Y" or "y"
+        if ! [[ $response =~ ^[Yy]$ ]]; then
+            # user doesn't want to start another Pomodoro session
+            echo "No more Pomodoro sessions."
+            break
+        fi
+    done
+else
+    # user doesn't want to start the Pomodoro session
+    echo "No Pomodoro session started."
+fi
